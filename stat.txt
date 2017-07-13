@@ -1,0 +1,49 @@
+Emoji83+		1.0-2	73,729
+LLBiPT5		1.0	10
+LLBiPT5		1.0-1	3,276
+Flashorama		1.4-3	8,102
+Still Capture Enabler 2		1.5-3	3,742
+TransparentCameraBar		1.1-8	10,115
+Record 'n' Torch		1.0-4	5,489
+Record 'n' Torch		1.0-5	5,441
+FaceDetectionDuringVideo		1.0-5	14,218
+Flashorama		1.4-4	7,948
+Front HDR		1.1-2	10,189
+LLBPano		1.0-4	6,153
+Record 'n' Torch		1.0-6	1,490
+Still Capture Enabler 2		1.5-4	4,112
+TransparentCameraBar		1.2-1	10,533
+Record 'n' Torch		1.0-7	5,502
+Front HDR		1.1-3	18,048
+FaceDetectionDuringVideo		1.0-6	17,102
+FB Unlimited Chat Heads		0.0.2-1	4,179
+Flashorama		1.4-5	12,575
+LLBPano		1.0-5	8,164
+FrontFlash		1.0-1	10,196
+Front HDR		1.1-6	17,006
+FrontFlash		1.1-1	14,196
+Record 'n' Torch		1.2-1	12,505
+MyAssistive		1.3-1	3,373
+FrontFlash		1.1-2	10,371
+FrontFlash		1.1-3	11,084
+FrontFlash		1.1-4	14,593
+Still Capture Enabler 2		1.6-1	7,110
+MyAssistive		1.3-2	586
+Front HDR		1.1-7	9,593
+PhotoTorch		1.0-10	6,644
+FullCameraLog		0.0.1-2	466
+MyAssistive		1.3-3	1,557
+Still Capture Enabler 2		1.6-4	1,530
+Front HDR		1.1-8	8,946
+PhotoTorch		1.1-3	5,688
+Record 'n' Torch		1.2-6	7,325
+Front HDR		1.1-10	7,069
+SwitchAutofocus		1.1-3	746
+TransparentCameraBar		1.6-11	22,636
+MoreSiri		1.0-5	5,116
+SwipeForMore		1.1-2	32,014
+SmoothCursor		1.0-5	2,148
+SmoothCursor		1.0-6	7,697
+SmoothPop		1.0-6	1,749
+LetterPress9		1.0-1	1,073
+exKeyboard		1.1-4	522
