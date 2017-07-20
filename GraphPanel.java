@@ -16,7 +16,9 @@ import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Vector;
 
@@ -34,12 +36,16 @@ public class GraphPanel extends JPanel {
 	private Color gridColor = new Color(200, 200, 200, 200);
 	private static final Stroke GRAPH_STROKE = new BasicStroke(2f);
 	private int pointWidth = 4;
-	private int numberYDivisions = 10;
+	private int numberYDivisions = 20;
 	private List<List<Integer>> scores;
 	private int currentMaxIndex = 0;
 	private int currentMaxVersions = 0;
 	private static Random random = new Random();
-	
+	public static boolean chart = false;
+	public static String[] data;
+	private Map<String, Color> colors = new HashMap<String, Color>();
+	private Integer maxScore = Integer.MIN_VALUE;
+
 	public static double xMultiplier = 1;
 
 	public GraphPanel(List<List<Integer>> scores) {
@@ -51,24 +57,36 @@ public class GraphPanel extends JPanel {
 			}
 		}
 	}
+	
+	public Color getColor(int i) {
+		String key = data[i].split("|")[0];
+		Color color = colors.get(key);
+		if (color == null) {
+			color = new Color(random.nextInt(256), random.nextInt(256), random.nextInt(256));
+			colors.put(key, color);
+		}
+		return color;
+	}
 
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		Graphics2D g2 = (Graphics2D) g;
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		
+
 		double xScale = ((double) getWidth() - (2 * padding) - labelPadding) / (scores.get(currentMaxIndex).size() - 1);
-		double yScale = ((double) getHeight() - 2 * padding - labelPadding) / (getMaxScore() - getMinScore());
+		double yScale = ((double) getHeight() - (2 * padding) - labelPadding) / getMaxScore();
 
 		List<List<Point>> graphPoints = new Vector<>();
+		
+		int baseY = getHeight() - padding - labelPadding;
 
 		// Adding points
 		for (List<Integer> subscores : scores) {
 			List<Point> subgraphPoints = new Vector<>();
 			for (int i = 0; i < subscores.size(); i++) {
 				int x1 = (int) (i * xScale + padding + labelPadding);
-				int y1 = (int) ((getMaxScore() - subscores.get(i)) * yScale + padding);
+				int y1 = baseY - (int) (subscores.get(i) * yScale);
 				subgraphPoints.add(new Point(x1, y1));
 			}
 			graphPoints.add(subgraphPoints);
@@ -76,23 +94,20 @@ public class GraphPanel extends JPanel {
 
 		// draw white background
 		g2.setColor(Color.WHITE);
-		g2.fillRect(padding + labelPadding, padding, getWidth() - (2 * padding) - labelPadding,
-				getHeight() - 2 * padding - labelPadding);
+		g2.fillRect(padding + labelPadding, padding, getWidth() - (2 * padding) - labelPadding, getHeight() - (2 * padding) - labelPadding);
 		g2.setColor(Color.BLACK);
 
 		// create hatch marks and grid lines for y axis.
 		for (int i = 0; i < numberYDivisions + 1; i++) {
 			int x0 = padding + labelPadding;
 			int x1 = pointWidth + padding + labelPadding;
-			int y0 = getHeight()
-					- ((i * (getHeight() - padding * 2 - labelPadding)) / numberYDivisions + padding + labelPadding);
+			int y0 = getHeight() - ((i * (getHeight() - padding * 2 - labelPadding)) / numberYDivisions + padding + labelPadding);
 			int y1 = y0;
 			if (scores.size() > 0) {
 				g2.setColor(gridColor);
 				g2.drawLine(padding + labelPadding + 1 + pointWidth, y0, getWidth() - padding, y1);
 				g2.setColor(Color.BLACK);
-				String yLabel = ((int) ((getMinScore()
-						+ (getMaxScore() - getMinScore()) * ((i * 1.0) / numberYDivisions)) * 100)) / 100 + "";
+				String yLabel = ((int) ((getMaxScore()) * ((i * 1.0) / numberYDivisions) * 100)) / 100 + "";
 				FontMetrics metrics = g2.getFontMetrics();
 				int labelWidth = metrics.stringWidth(yLabel);
 				g2.drawString(yLabel, x0 - labelWidth - 5, y0 + (metrics.getHeight() / 2) - 3);
@@ -103,8 +118,8 @@ public class GraphPanel extends JPanel {
 		// and for x axis
 		for (int i = 0; i < scores.get(currentMaxIndex).size(); i++) {
 			if (scores.get(currentMaxIndex).size() > 1) {
-				int x0 = i * (getWidth() - padding * 2 - labelPadding) / (scores.get(currentMaxIndex).size() - 1) + padding
-						+ labelPadding;
+				int x0 = i * (getWidth() - padding * 2 - labelPadding) / (scores.get(currentMaxIndex).size() - 1)
+						+ padding + labelPadding;
 				int x1 = x0;
 				int y0 = getHeight() - padding - labelPadding;
 				int y1 = y0 - pointWidth;
@@ -112,7 +127,7 @@ public class GraphPanel extends JPanel {
 					g2.setColor(gridColor);
 					g2.drawLine(x0, getHeight() - padding - labelPadding - 1 - pointWidth, x1, padding);
 					g2.setColor(Color.BLACK);
-					String xLabel = (int)(i * xMultiplier) + "";
+					String xLabel = (int) (i * xMultiplier) + "";
 					FontMetrics metrics = g2.getFontMetrics();
 					int labelWidth = metrics.stringWidth(xLabel);
 					g2.drawString(xLabel, x0 - labelWidth / 2, y0 + metrics.getHeight() + 3);
@@ -128,14 +143,25 @@ public class GraphPanel extends JPanel {
 
 		Stroke oldStroke = g2.getStroke();
 		g2.setStroke(GRAPH_STROKE);
-		for (List<Point> subgraphPoints : graphPoints) {
-			g2.setColor(new Color(random.nextInt(256), random.nextInt(256), random.nextInt(256)));
-			for (int i = 0; i < subgraphPoints.size() - 1; i++) {
-				int x1 = subgraphPoints.get(i).x;
-				int y1 = subgraphPoints.get(i).y;
-				int x2 = subgraphPoints.get(i + 1).x;
-				int y2 = subgraphPoints.get(i + 1).y;
-				g2.drawLine(x1, y1, x2, y2);
+		if (chart) {
+			for (List<Point> subgraphPoints : graphPoints) {
+				for (int i = 0; i < subgraphPoints.size(); i++) {
+					g2.setColor(getColor(i));
+					int x = subgraphPoints.get(i).x;
+					int y = subgraphPoints.get(i).y;
+					g2.drawLine(x, baseY, x, y);
+				}
+			}
+		} else {
+			for (List<Point> subgraphPoints : graphPoints) {
+				g2.setColor(new Color(random.nextInt(256), random.nextInt(256), random.nextInt(256)));
+				for (int i = 0; i < subgraphPoints.size() - 1; i++) {
+					int x1 = subgraphPoints.get(i).x;
+					int y1 = subgraphPoints.get(i).y;
+					int x2 = subgraphPoints.get(i + 1).x;
+					int y2 = subgraphPoints.get(i + 1).y;
+					g2.drawLine(x1, y1, x2, y2);
+				}
 			}
 		}
 
@@ -167,7 +193,8 @@ public class GraphPanel extends JPanel {
 	}
 
 	private Integer getMaxScore() {
-		Integer maxScore = Integer.MIN_VALUE;
+		if (maxScore != Integer.MIN_VALUE)
+			return maxScore;
 		for (List<Integer> subscores : scores) {
 			for (Integer score : subscores)
 				maxScore = Math.max(maxScore, score);

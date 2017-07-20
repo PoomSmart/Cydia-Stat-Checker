@@ -8,7 +8,7 @@
  *
  * Note about this program
  * 
- * 1. Packages which version format is one of a.b-c, a.b.c and a.b.c-d are supported
+ * 1. Packages which version format is one of a.b, a.b-c, a.b.c and a.b.c-d are supported
  * 2. normalizedName(String) method may be used to fix the issue about same tweak but different names
  * 3. You may plot downloads data from multiple tweaks
  * 
@@ -22,9 +22,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -40,14 +43,16 @@ public class Checker {
 
 	public static Map<String, Map<String, Integer>> tweaks = new HashMap<String, Map<String, Integer>>();
 	public static Map<String, Map<String, Integer>> flipswitches = new HashMap<String, Map<String, Integer>>();
-	public static Map<String, Integer> submits = new HashMap<String, Integer>();
-	public static List<String> outdatedTweaks = new Vector<String>();
+	public static Map<String, Integer> submits = new LinkedHashMap<String, Integer>();
+	public static Set<String> outdatedTweaks = new HashSet<String>();
+	public static Set<String> exclusiveTweaks = new HashSet<String>();
 	public static Pattern versionPattern1 = Pattern.compile("(\\d+)\\.(\\d+)\\-(\\d+)");
 	public static Pattern versionPattern2 = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)\\-(\\d+)");
 	public static Pattern versionPattern3 = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)");
 	public static Pattern versionPattern4 = Pattern.compile("(\\d+)\\.(\\d+)");
 	public static Matcher matcher;
 	public static boolean includeOutdated = true;
+	public static boolean exclusiveOnly = false;
 	public static boolean fetchFromLink = true;
 
 	public static String developer = "PoomSmart";
@@ -88,7 +93,9 @@ public class Checker {
 	}
 
 	public static String normalizedName(String name) {
-		if (outdatedTweaks.contains(name) && !includeOutdated)
+		if (!includeOutdated && outdatedTweaks.contains(name))
+			return null;
+		if(exclusiveOnly && !exclusiveTweaks.contains(name))
 			return null;
 		if (name.equals("Still Capture Enabler"))
 			return "Still Capture Enabler 2";
@@ -205,6 +212,8 @@ public class Checker {
 	}
 
 	public static void setOutdatedTweaks() {
+		if (!includeOutdated)
+			return;
 		outdatedTweaks.add("NativeZoom");
 		outdatedTweaks.add("Randomy");
 		outdatedTweaks.add("MyAssistive");
@@ -326,12 +335,48 @@ public class Checker {
 		GraphPanel.xMultiplier = (max - min) / dist.size();
 		GraphPanel.constructGraph("Downloads Distribution (per submission) by " + developer, dist.values());
 	}
+	
+	public static void distSubmits() {
+		int i = 0, size = submits.size();
+		GraphPanel.chart = true;
+		String[] data = new String[size];
+		for (String key : submits.keySet())
+			data[i++] = key;
+		GraphPanel.data = data;
+		List<Integer> reverseSubmits = new ArrayList<Integer>(submits.values());
+        Collections.reverse(reverseSubmits);
+		GraphPanel.constructGraph("Submits Distribution by " + developer, reverseSubmits);
+	}
+	
+	public static void setExclusiveTweaks() {
+		if (!exclusiveOnly)
+			return;
+		exclusiveTweaks.add("Burst mode");
+		exclusiveTweaks.add("Slo-mo Mod");
+		exclusiveTweaks.add("TransparentCameraBar");
+		exclusiveTweaks.add("SwipeForMore");
+		exclusiveTweaks.add("FrontFlash");
+		exclusiveTweaks.add("RecordPause");
+		exclusiveTweaks.add("SmoothCursor");
+		exclusiveTweaks.add("BlurryBadges");
+		exclusiveTweaks.add("CameraModes");
+		exclusiveTweaks.add("PhotoTorch");
+		exclusiveTweaks.add("LetMeSwitch");
+		exclusiveTweaks.add("CamBlur7");
+		exclusiveTweaks.add("UnlimShortcut");
+	}
 
 	public static void main(String[] args) throws IOException {
 		setOutdatedTweaks();
+		setExclusiveTweaks();
 		readTweaks();
+
+		distSubmits();
 		rankBest(30);
+
 		System.out.println("Total downloads for every submission: " + totalDownloads);
+		System.out.println("Total submissions: " + submits.size());
+		System.out.println("Average downloads per submission: " + totalDownloads / submits.size());
 	}
 
 }
